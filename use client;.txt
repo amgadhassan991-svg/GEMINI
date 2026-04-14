@@ -8,8 +8,8 @@ export default function TheBeastLive() {
   ]);
   const [loading, setLoading] = useState(false);
 
-  // 🎯 ارزع المفتاح بتاعك هنا بين العلامتين "" ومحدش هيشوفه غيرك في الكود
-  const apiKey = "حط_هنا_المفتاح_بتاعك"; 
+  // 🎯 المفتاح بتاعك محطوط هنا اهو
+  const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY; 
   
   const systemPrompt = `أنت 'الوحش'، مستشار عقاري خبير وصايع في مدينتي والقاهرة الجديدة. 
 تحدث باللهجة العامية المصرية القوية. ممنوع تقول 'تحت أمرك يا فندم'. 
@@ -17,7 +17,7 @@ export default function TheBeastLive() {
 
   const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!input.trim() || apiKey === "حط_هنا_المفتاح_بتاعك") return;
+    if (!input.trim() || !apiKey) return;
 
     const userMsg = input.trim();
     setMessages(prev => [...prev, { role: "user", text: userMsg }]);
@@ -36,7 +36,8 @@ export default function TheBeastLive() {
       const data = await response.json();
       const reply = data.candidates?.[0]?.content?.parts?.[0]?.text || "في ضغط على السيرفر، جرب تاني يا وحش.";
       setMessages(prev => [...prev, { role: "ai", text: reply }]);
-    } catch (err) {
+    } catch { 
+      // مسحنا كلمة err من هنا عشان Vercel ميزعلش
       setMessages(prev => [...prev, { role: "ai", text: "المفتاح فيه مشكلة أو النت فصل!" }]);
     } finally {
       setLoading(false);
@@ -45,8 +46,8 @@ export default function TheBeastLive() {
 
   return (
     <div className="min-h-screen bg-[#05070e] text-white flex flex-col font-sans" dir="rtl">
-      {/* Header الصايع */}
-      <header className="border-b border-yellow-600/30 bg-[#030408] p-5 flex justify-between items-center shadow-lg">
+      {/* Header */}
+      <header className="border-b border-yellow-600/30 bg-[#030408] p-5 flex justify-between items-center shadow-lg sticky top-0 z-50">
         <div className="flex items-center gap-4">
           <div className="w-10 h-10 bg-yellow-600 rounded-lg flex items-center justify-center text-black font-bold text-xl shadow-[0_0_20px_rgba(202,138,4,0.4)]">D</div>
           <div>
@@ -73,11 +74,13 @@ export default function TheBeastLive() {
             </div>
           </div>
         ))}
-        {loading && <div className="text-yellow-600 text-xs font-bold animate-pulse text-center">الوحش بيحلل الداتا... 🔍</div>}
+        {loading && (
+          <div className="text-yellow-600 text-xs font-bold animate-pulse text-center">الوحش بيحلل الداتا... 🔍</div>
+        )}
       </main>
 
       {/* Input Field */}
-      <footer className="p-6 bg-[#030408] border-t border-gray-800/50">
+      <footer className="p-6 bg-[#030408] border-t border-gray-800/50 sticky bottom-0">
         <form onSubmit={handleSend} className="max-w-4xl mx-auto flex gap-3">
           <input 
             type="text" 
